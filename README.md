@@ -33,9 +33,10 @@ A full website for **155 Stairs**, a made-up café in Tbilisi, Georgia: a public
 ## Security
 
 - Admin password stored as a salted hash; login limited to 5 tries per 10 minutes
-- Protection tokens (CSRF) on all admin forms
-- Uploaded photos checked by file contents, not just the file name, and saved under random names
-- Hidden "honeypot" field against spam bots; rate limits on chat and booking lookups
+- Protection tokens (CSRF) on every form, public and admin, so other websites can't submit forms in a visitor's name
+- The booking confirmation page opens only in the browser that made the booking; anyone else must give the reference **and** the phone number
+- Uploaded photos checked by file contents, not just the file name, and saved under random names; files are deleted from disk once nothing uses them
+- Hidden "honeypot" field against spam bots; rate limits on chat, booking lookups, cancellations and event requests
 - Secure cookies and security headers in production; the app refuses to start in production with the default password
 
 ## Tech stack
@@ -86,7 +87,9 @@ The database and photos are files, so use a host with a **persistent disk**, and
 
 - [ ] Screenshots in this README
 - [ ] Automated tests for the booking rules
-- [ ] CSRF protection on the public forms too
+- [x] CSRF protection on the public forms too
+- [x] Private booking confirmation page
+- [x] Clean up unused photo files
 - [ ] Split `app.py` into smaller modules (Flask blueprints)
 - [ ] Live demo
 - [ ] Online deposit for bookings (needs a Georgian payment provider such as Bank of Georgia iPay or TBC Checkout)

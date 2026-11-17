@@ -36,6 +36,7 @@ KA = {
  "What is it about?": "რას ეხება?", "Birthday or private event": "დაბადების დღე ან პირადი ღონისძიება", "Gift voucher": "სასაჩუქრე ვაუჩერი", "Something else": "სხვა", "Preferred date (optional)": "სასურველი თარიღი (არასავალდებულო)",
  "Number of guests (optional)": "სტუმრების რაოდენობა (არასავალდებულო)", "Your message": "თქვენი შეტყობინება", "Send request": "მოთხოვნის გაგზავნა", "Thank you! We received your request and will contact you soon.": "გმადლობთ! თქვენი მოთხოვნა მივიღეთ და მალე დაგიკავშირდებით.",
  "Please enter your name, a phone number and a short message.": "გთხოვთ, მიუთითოთ სახელი, ტელეფონის ნომერი და მოკლე შეტყობინება.", "Too many tries. Please wait 10 minutes.": "ძალიან ბევრი მცდელობა. გთხოვთ, დაელოდოთ 10 წუთს.",
+ "This page was open for too long. Please try again.": "ეს გვერდი დიდხანს იყო გახსნილი. გთხოვთ, სცადოთ თავიდან.",
  "Type your message": "დაწერეთ შეტყობინება", "Send": "გაგზავნა", "Book now": "დაჯავშნა",
  "Every day": "ყოველდღე", "Choose the table you like; bigger groups can combine tables.": "აირჩიეთ თქვენთვის სასურველი მაგიდა; დიდ ჯგუფებს შეუძლიათ რამდენიმე მაგიდის გაერთიანება.",
  "Choose your table": "აირჩიეთ მაგიდა", "Inside": "შიგნით", "Outside": "გარეთ", "All": "ყველა", "Selected seats": "არჩეული ადგილები",

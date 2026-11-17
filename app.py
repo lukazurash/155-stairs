@@ -491,6 +491,8 @@ def reserve_post():
     f, s = request.form, S()
     if f.get("website"):  # hidden field that only bots fill in
         return redirect(url_for("home"))
+    if not csrf_ok():
+        return reserve_page(EXPIRED, f, 400)
     name = f.get("name", "").strip()[:80]
     phone = re.sub(r"[^\d+]", "", f.get("phone", ""))
     email = f.get("email", "").strip()[:120]
@@ -547,20 +549,30 @@ def reserve_post():
         con.execute("COMMIT" if ok else "ROLLBACK")
     if error:
         return reserve_page(error, f, 409)
+    session["my_refs"] = (session.get("my_refs", []) + [ref])[-10:]  # only this browser may open the confirmation page
     notify(f"New reservation ({'confirmed' if s['auto_confirm'] == '1' else 'needs confirmation'})\n{name}, {guests} guests\n{d} at {fmt(start)}, {' + '.join(t['name'] for t in chosen)}\nPhone: {phone}"
            + (f"\nNotes: {notes}" if notes else "") + f"\nRef {ref}\n{request.host_url}admin/reservations")
     return redirect(url_for("reserved", ref=ref))
+
+
+def too_many_tries():
+    """Allow 10 lookups or requests per visitor (IP address) every 10 minutes."""
+    ip, now = request.remote_addr, time.time()
+    LOOKUPS[ip] = [t for t in LOOKUPS.get(ip, []) if now - t < 600]
+    if len(LOOKUPS[ip]) >= 10:
+        return True
+    LOOKUPS[ip].append(now)
+    return False
 
 
 @app.route("/manage", methods=["GET", "POST"])
 def manage():
     r, error = None, None
     if request.method == "POST":
-        ip, now = request.remote_addr, time.time()
-        LOOKUPS[ip] = [t for t in LOOKUPS.get(ip, []) if now - t < 600]
-        if len(LOOKUPS[ip]) >= 10:
+        if not csrf_ok():
+            return render_template("manage.html", r=None, error=EXPIRED), 400
+        if too_many_tries():
             return render_template("manage.html", r=None, error="Too many tries. Please wait 10 minutes."), 429
-        LOOKUPS[ip].append(now)
         r = db().execute("SELECT * FROM reservations WHERE ref=? AND phone=?", (request.form.get("ref", "").strip().upper(),
                          re.sub(r"[^\d+]", "", request.form.get("phone", "")))).fetchone()
         if not r:
@@ -570,7 +582,11 @@ def manage():
 
 @app.post("/manage/cancel")
 def manage_cancel():
-    ref, phone = request.form.get("ref", "").strip().upper(), re.sub(r"[^\d+]", "", request.form.get("phone", ""))
+    if not csrf_ok():
+        return render_template("manage.html", r=None, error=EXPIRED), 400
+    if too_many_tries():
+        return render_template("manage.html", r=None, error="Too many tries. Please wait 10 minutes."), 429
+    ref, phone =request.form.get("ref", "").strip().upper(), re.sub(r"[^\d+]", "", request.form.get("phone", ""))
     r = db().execute("SELECT * FROM reservations WHERE ref=? AND phone=?", (ref, phone)).fetchone()
     if r and r["status"] in ("pending", "confirmed"):
         db().execute("UPDATE reservations SET status='cancelled' WHERE id=?", (r["id"],))
@@ -581,6 +597,8 @@ def manage_cancel():
 
 @app.get("/reserved/<ref>")
 def reserved(ref):
+    if ref not in session.get("my_refs", []) and not session.get("admin"):
+        return redirect(url_for("manage"))  # strangers must give the phone number too
     r = db().execute("SELECT * FROM reservations WHERE ref=?", (ref,)).fetchone()
     if not r:
         abort(404)
@@ -589,10 +607,17 @@ def reserved(ref):
 
 # ---------- admin ----------
 FAILS = {}
+EXPIRED = "This page was open for too long. Please try again."
+
+
+def csrf_ok():
+    """True when the form carries this visitor's secret token, so it came from our own page."""
+    token = session.get("csrf", "")
+    return bool(token) and secrets.compare_digest(request.form.get("csrf", ""), token)
 
 
 def check_csrf():
-    if not secrets.compare_digest(request.form.get("csrf", ""), session.get("csrf", "")):
+    if not csrf_ok():
         abort(400)
 
 
@@ -766,6 +791,17 @@ def save_photo(file):
     return "/media/" + name
 
 
+def drop_photo(path):
+    """Delete an uploaded photo from disk once no dish, table, gallery item or logo uses it."""
+    if not path or not path.startswith("/media/"):
+        return
+    used = db().execute("""SELECT 1 FROM dishes WHERE image=:p UNION ALL SELECT 1 FROM dining_tables WHERE image=:p
+        UNION ALL SELECT 1 FROM gallery WHERE image=:p UNION ALL SELECT 1 FROM settings WHERE key='logo' AND value=:p""",
+                        {"p": path}).fetchone()
+    if not used:
+        (UPLOADS / Path(path).name).unlink(missing_ok=True)  # .name keeps the delete inside the uploads folder
+
+
 @app.get("/admin/menu")
 @admin_required
 def admin_menu():
@@ -809,6 +845,8 @@ def admin_dish_save():
     rid = did if (did and old) else db().execute("SELECT last_insert_rowid()").fetchone()[0]
     db().execute("UPDATE dishes SET name_ka=?, description_ka=?, ingredients_ka=? WHERE id=?",
                  (f.get("name_ka", "").strip()[:100], f.get("description_ka", "").strip()[:400], f.get("ingredients_ka", "").strip()[:300], rid))
+    if old and old["image"] != image:
+        drop_photo(old["image"])
     flash("Dish saved.")
     return redirect(url_for("admin_menu"))
 
@@ -817,7 +855,10 @@ def admin_dish_save():
 @admin_required
 def admin_dish_delete(did):
     check_csrf()
+    old = db().execute("SELECT image FROM dishes WHERE id=?", (did,)).fetchone()
     db().execute("DELETE FROM dishes WHERE id=?", (did,))
+    if old:
+        drop_photo(old["image"])
     flash("Dish deleted.")
     return redirect(url_for("admin_menu"))
 
@@ -897,7 +938,10 @@ def admin_settings():
             flash(str(e))
             return redirect(url_for("admin_settings"))
         if new_logo or f.get("remove_logo"):
+            old_logo = S()["logo"]
             db().execute("INSERT OR REPLACE INTO settings(key,value) VALUES('logo',?)", (new_logo or "",))
+            if old_logo != new_logo:
+                drop_photo(old_logo)
         for key, _, _ in SETTING_FIELDS:
             val = f.get(key, "").strip()[:600]
             if key in ("instagram", "google_reviews") and not val.startswith("https://"):
@@ -946,7 +990,10 @@ def admin_gallery():
 def admin_gallery_action(pid, action):
     check_csrf()
     if action == "delete":
+        old = db().execute("SELECT image FROM gallery WHERE id=?", (pid,)).fetchone()
         db().execute("DELETE FROM gallery WHERE id=?", (pid,))
+        if old:
+            drop_photo(old["image"])
     elif action == "cover":
         db().execute("INSERT OR REPLACE INTO settings(key,value) VALUES('cover',?)", (str(pid),))
     return redirect(url_for("admin_gallery"))
@@ -1059,13 +1106,12 @@ def events():
     error = done = None
     f = request.form
     if request.method == "POST" and not f.get("website"):
-        ip, now = request.remote_addr, time.time()
-        LOOKUPS[ip] = [t for t in LOOKUPS.get(ip, []) if now - t < 600]
         name, phone, msg = f.get("name", "").strip()[:80], re.sub(r"[^\d+]", "", f.get("phone", "")), f.get("message", "").strip()[:1000]
-        if len(LOOKUPS[ip]) >= 10:
+        if not csrf_ok():
+            error = EXPIRED
+        elif too_many_tries():
             error = "Too many tries. Please wait 10 minutes."
         else:
-            LOOKUPS[ip].append(now)
             if len(name) < 2 or not 7 <= len(phone.replace("+", "")) <= 15 or not msg:
                 error = "Please enter your name, a phone number and a short message."
             else:
@@ -1126,6 +1172,8 @@ def admin_table_save():
         db().execute("UPDATE dining_tables SET name=?,zone=?,seats=?,image=?,description=?,name_ka=?,description_ka=?,active=? WHERE id=?", vals + (tid,))
     else:
         db().execute("INSERT INTO dining_tables(name,zone,seats,image,description,name_ka,description_ka,active) VALUES(?,?,?,?,?,?,?,?)", vals)
+    if old and old["image"] != image:
+        drop_photo(old["image"])
     flash("Table saved.")
     return redirect(url_for("admin_tables"))
 
@@ -1137,7 +1185,10 @@ def admin_table_delete(tid):
     if db().execute("SELECT 1 FROM reservations WHERE ','||tables||',' LIKE ?", (f"%,{tid},%",)).fetchone():
         flash("This table is in the booking history. Switch it off instead of deleting it.")
     else:
+        old = db().execute("SELECT image FROM dining_tables WHERE id=?", (tid,)).fetchone()
         db().execute("DELETE FROM dining_tables WHERE id=?", (tid,))
+        if old:
+            drop_photo(old["image"])
         flash("Table deleted.")
     return redirect(url_for("admin_tables"))
 
