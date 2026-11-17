@@ -70,7 +70,7 @@ def main():
 
     with sync_playwright() as p:
         browser = p.chromium.launch(channel=channel)
-        desk = browser.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1)
+        desk = browser.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, reduced_motion="reduce")  # no half-faded cards
         page = desk.new_page()
 
         def shot(name, full=False, clip_height=None):
@@ -110,7 +110,7 @@ def main():
         shot("admin-chat")
 
         phone = browser.new_context(viewport={"width": 390, "height": 844}, device_scale_factor=2, is_mobile=True,
-                                    has_touch=True)
+                                    has_touch=True, reduced_motion="reduce")
         phone.add_cookies([{"name": "lang", "value": "ka", "url": BASE}])
         page = phone.new_page()
         page.goto(BASE + "/")

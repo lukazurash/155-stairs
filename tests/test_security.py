@@ -263,3 +263,9 @@ def test_tab_icon(client):
     resp = client.get("/favicon.ico")
     assert resp.status_code == 301 and resp.headers["Location"] == "/static/favicon.svg"
     assert client.get("/static/favicon.svg").status_code == 200
+
+
+def test_motion_scripts_only_on_public_pages(admin):
+    assert b"/static/js/motion.js" in admin.get("/").data
+    assert b"lenis.min.js" in admin.get("/menu").data
+    assert b"motion.js" not in admin.get("/admin/reservations").data  # owner panel stays still

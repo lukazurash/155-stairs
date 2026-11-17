@@ -121,3 +121,7 @@ body{padding-bottom:84px}body.chatopen .bookbar{display:none}.dishes{grid-templa
 @media(max-width:600px){.reservefab,#chatbtn{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:calc(50vw - 22px);min-height:52px;padding:8px 10px;font-size:16px;line-height:1.2;text-align:center}
 .reservefab{left:max(16px,env(safe-area-inset-left,0px));right:auto;bottom:max(16px,env(safe-area-inset-bottom,0px))}
 #chatbtn[hidden]{display:none}body{padding-bottom:84px}.hero{min-height:calc(70vh - 80px)}}
+/* shiny sweep across the hero's small heading */
+.hero .eyebrow{background:linear-gradient(110deg,var(--gold) 35%,#fff3cf 50%,var(--gold) 65%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 5s linear infinite}
+@keyframes shine{from{background-position:100% 0}to{background-position:-150% 0}}
+@media(prefers-reduced-motion:reduce){.hero .eyebrow{animation:none}}
