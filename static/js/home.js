@@ -2,6 +2,8 @@
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var slides = document.querySelectorAll('.hero .slide');
   if (slides.length > 1 && !reduce) {
+    // the other slides download only after the page has loaded, so the first photo shows sooner
+    window.addEventListener('load', function () { slides.forEach(function (s) { if (s.dataset.src) s.src = s.dataset.src; }); });
     var i = 0;
     setInterval(function () { slides[i].classList.remove('on'); i = (i + 1) % slides.length; slides[i].classList.add('on'); }, 6000);
   }

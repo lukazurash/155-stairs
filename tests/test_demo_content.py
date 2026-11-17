@@ -14,7 +14,7 @@ _spec.loader.exec_module(demo)
 
 def test_fills_an_empty_site():
     report = demo.fill(cafe.DB_PATH)
-    assert report == {"dish photos": 13, "gallery photos": 6, "table photos": 5, "reviews": 3, "texts": 3}
+    assert report == {"dish photos": 15, "gallery photos": 6, "table photos": 5, "reviews": 3, "texts": 3}
     cover = sql("SELECT value FROM settings WHERE key='cover'")[0]["value"]
     assert cover == str(sql("SELECT MIN(id) AS i FROM gallery")[0]["i"])
 
@@ -52,3 +52,10 @@ def test_demo_photos_are_never_deleted_from_disk(admin):
     gid = sql("SELECT id FROM gallery ORDER BY id LIMIT 1")[0]["id"]
     admin.post(f"/admin/gallery/{gid}/delete", data={"csrf": csrf(admin)})
     assert (ROOT / "static" / "demo" / "cafe-evening.jpg").is_file()
+
+
+def test_hero_loads_only_the_first_slide_up_front(client):
+    demo.fill(cafe.DB_PATH)
+    hero = client.get("/").data.decode().split('<div class="hero-in">')[0]
+    assert hero.count(' src="') == 1 and 'fetchpriority="high"' in hero
+    assert hero.count("data-src=") == 4  # the other slides wait for home.js

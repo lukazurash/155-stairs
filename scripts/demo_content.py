@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DEMO = "/static/demo/"
 
 DISH_PHOTOS = {  # dish name (as seeded) -> file in static/demo
-    "Tomato bruschetta": "bruschetta", "Adjarian khachapuri": "khachapuri", "Mushroom pasta": "mushroom-pasta",
+    "Pkhali trio": "pkhali", "Chicken in walnut sauce": "satsivi", "Tomato bruschetta": "bruschetta", "Adjarian khachapuri": "khachapuri", "Mushroom pasta": "mushroom-pasta",
     "Honey cake": "honey-cake", "Baked cheesecake": "cheesecake", "Espresso": "espresso", "Cappuccino": "cappuccino",
     "Hot chocolate": "hot-chocolate", "Homemade lemonade": "lemonade", "Iced coffee": "iced-coffee",
     "House red wine (glass)": "red-wine", "House white wine (glass)": "white-wine", "Craft beer": "craft-beer",

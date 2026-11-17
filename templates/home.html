@@ -1,5 +1,5 @@
 {% extends "base.html" %}{% from "_macros.html" import scene, photo, signature, stars %}{% block body %}
-<section class="hero">{% if slides|length > 1 %}{% for p in slides %}<img class="bg slide{{ ' on' if loop.first }}" src="{{ p.image }}" alt="">{% endfor %}{% elif slides %}<img class="bg" src="{{ slides[0].image }}" alt="">{% else %}{{ scene() }}{% endif %}
+<section class="hero">{% if slides|length > 1 %}{% for p in slides %}{% if loop.first %}<img class="bg slide on" src="{{ p.image }}" alt="" fetchpriority="high">{% else %}<img class="bg slide" data-src="{{ p.image }}" alt="">{% endif %}{% endfor %}{% elif slides %}<img class="bg" src="{{ slides[0].image }}" alt="" fetchpriority="high">{% else %}{{ scene() }}{% endif %}
 <div class="hero-in"><p class="eyebrow">{{ _('Cafe · Wine · Desserts') }}</p><h1>{{ s.name }}</h1><p class="lead">{{ loc(s, 'tagline') }}</p>
 <p class="herobtns"><a class="btn gold" href="/menu">{{ _('See the menu') }}</a> <a class="btn alt" href="#inside">{{ _('Step inside') }}</a></p></div></section>
 {% if s.special %}<section class="special"><strong>{{ _("Today's special") }}</strong> {{ loc(s, 'special') }}</section>{% endif %}
