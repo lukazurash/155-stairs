@@ -4,6 +4,20 @@ A full website for **155 Stairs**, a made-up café in Tbilisi, Georgia: a public
 
 > Concept project for my portfolio. The café, address and phone number are not real.
 
+![Home page](docs/screenshots/home.png)
+
+## Screenshots
+
+| Booking: pick a time, then a table | Owner's reservations list |
+|---|---|
+| <img src="docs/screenshots/booking.png" alt="Booking page with time slots and table picker" width="420"> | <img src="docs/screenshots/admin.png" alt="Admin reservations with bookings waiting for confirmation" width="420"> |
+
+| Menu | Live chat (admin side) | Georgian, on a phone |
+|---|---|---|
+| <img src="docs/screenshots/menu.png" alt="Menu page" width="300"> | <img src="docs/screenshots/admin-chat.png" alt="Admin chat with a guest" width="300"> | <img src="docs/screenshots/mobile-ka.png" alt="Home page in Georgian on a phone" width="180"> |
+
+The screenshots use sample data. To take them again after changing the design: `pip install playwright`, then `python scripts/screenshots.py` (it uses a temporary database and the Edge browser already on Windows).
+
 ## Features
 
 **For guests**
@@ -80,6 +94,8 @@ templates/        HTML pages (Jinja)
 static/css, js/   styles and scripts
 static/uploads/   uploaded photos (not in Git)
 tests/            pytest tests
+scripts/          screenshots.py (README screenshots)
+docs/screenshots/ README images
 data/cafe.db      database (created on first run, not in Git)
 ```
 
@@ -95,7 +111,7 @@ The database and photos are files, so use a host with a **persistent disk**, and
 
 ## Roadmap
 
-- [ ] Screenshots in this README
+- [x] Screenshots in this README
 - [x] Automated tests for the booking rules and security fixes
 - [x] CSRF protection on the public forms too
 - [x] Private booking confirmation page
