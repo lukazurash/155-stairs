@@ -61,6 +61,15 @@ Open http://127.0.0.1:5000. The admin panel is at http://127.0.0.1:5000/admin, a
 
 On macOS or Linux, use `source venv/bin/activate` instead of the second line.
 
+## Tests
+
+```
+pip install -r requirements-dev.txt
+python -m pytest
+```
+
+65 pytest tests cover the booking rules (table clashes, group sizes, opening hours, closures, the 3-booking limit, staff table allocation) and the security fixes (CSRF, the private confirmation page, rate limits, admin login lockout, photo upload checks and clean-up). Each test runs against its own temporary database and uploads folder, so your real data is never touched.
+
 ## Project structure
 
 ```
@@ -70,6 +79,7 @@ seed_text.py      starting menu content
 templates/        HTML pages (Jinja)
 static/css, js/   styles and scripts
 static/uploads/   uploaded photos (not in Git)
+tests/            pytest tests
 data/cafe.db      database (created on first run, not in Git)
 ```
 
@@ -86,7 +96,7 @@ The database and photos are files, so use a host with a **persistent disk**, and
 ## Roadmap
 
 - [ ] Screenshots in this README
-- [ ] Automated tests for the booking rules
+- [x] Automated tests for the booking rules and security fixes
 - [x] CSRF protection on the public forms too
 - [x] Private booking confirmation page
 - [x] Clean up unused photo files
