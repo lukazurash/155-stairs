@@ -117,3 +117,7 @@ body{padding-bottom:84px}body.chatopen .bookbar{display:none}.dishes{grid-templa
 .tbody{padding:10px 14px 14px}.tbody strong{display:block;font-size:17px}.tmeta{color:var(--muted);font-size:14px}.tbody p{margin:6px 0 0;font-size:14px;color:var(--muted);line-height:1.4}
 .seatinfo{font-weight:600;color:var(--muted)}.seatinfo.ok{color:var(--accent)}.noimg{background:#ead8b8;display:grid;place-items:center;color:var(--muted);font-size:14px}
 .top .btn.alt{color:#f6e9cf;border-color:rgba(246,233,207,.5)}.top .btn.alt:hover{background:rgba(255,255,255,.1)}
+/* phones: reserve and chat buttons side by side along the bottom, so they never sit on top of the content */
+@media(max-width:600px){.reservefab,#chatbtn{display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:calc(50vw - 22px);min-height:52px;padding:8px 10px;font-size:16px;line-height:1.2;text-align:center}
+.reservefab{left:max(16px,env(safe-area-inset-left,0px));right:auto;bottom:max(16px,env(safe-area-inset-bottom,0px))}
+#chatbtn[hidden]{display:none}body{padding-bottom:84px}.hero{min-height:calc(70vh - 80px)}}
