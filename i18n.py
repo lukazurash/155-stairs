@@ -2,7 +2,9 @@
 KA = {
  "Home": "მთავარი", "Menu": "მენიუ", "Drinks": "სასმელები", "About": "ჩვენ შესახებ", "Contact": "კონტაქტი",
  "Reserve a table": "მაგიდის დაჯავშნა", "Book a table": "დაჯავშნეთ მაგიდა", "Events and vouchers": "ღონისძიებები და ვაუჩერები",
- "Find us": "სად ვართ", "Opening hours": "სამუშაო საათები", "closed": "დაკეტილია", "Closed": "დაკეტილია", "Photo credits": "ფოტოების ავტორები",
+ "Find us": "სად ვართ", "Opening hours": "სამუშაო საათები", "closed": "დაკეტილია", "Closed": "დაკეტილია", "Photo credits": "ფოტოების ავტორები", "Inside the cafe": "კაფეს ინტერიერი", "Page not found": "გვერდი ვერ მოიძებნა",
+ "This step does not exist": "ეს საფეხური არ არსებობს", "The page you are looking for is not here. Try the menu or book a table.": "გვერდი, რომელსაც ეძებთ, აქ არ არის. ნახეთ მენიუ ან დაჯავშნეთ მაგიდა.",
+ "Back to the home page": "მთავარ გვერდზე დაბრუნება", "Homemade": "სახლის", "House favourite": "სახლის ფავორიტი",
     "Manage a booking": "ჯავშნის მართვა",
  "Monday": "ორშაბათი", "Tuesday": "სამშაბათი", "Wednesday": "ოთხშაბათი", "Thursday": "ხუთშაბათი", "Friday": "პარასკევი", "Saturday": "შაბათი", "Sunday": "კვირა",
  "Cafe · Wine · Desserts": "კაფე · ღვინო · დესერტები", "Date": "თარიღი", "Guests": "სტუმრები", "guests": "სტუმარი", "Find a table": "მაგიდის პოვნა",

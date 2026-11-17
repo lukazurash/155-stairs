@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 <html lang="{{ lang() }}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ s.name }}{% endblock %}</title>
+{% set desc = loc(s, 'about')|truncate(160) %}<meta name="description" content="{{ desc }}">
+<meta property="og:type" content="website"><meta property="og:site_name" content="{{ s.name }}"><meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ desc }}"><meta property="og:url" content="{{ request.base_url }}"><meta property="og:locale" content="{{ 'ka_GE' if lang() == 'ka' else 'en_US' }}">
+{% if og_image %}<meta property="og:image" content="{{ og_image }}"><meta name="twitter:card" content="summary_large_image">{% endif %}
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {% if s.font_style == 'modern' %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&family=Noto+Sans+Georgian:wght@400;600;700&display=swap" rel="stylesheet">
 {% else %}<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Playfair+Display:wght@500;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap" rel="stylesheet">{% endif %}

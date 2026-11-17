@@ -14,7 +14,8 @@ _spec.loader.exec_module(demo)
 
 def test_fills_an_empty_site():
     report = demo.fill(cafe.DB_PATH)
-    assert report == {"dish photos": 15, "gallery photos": 6, "table photos": 5, "reviews": 3, "texts": 3}
+    assert report == {"dish photos": 15, "gallery photos": 6, "table photos": 5, "reviews": 3, "texts": 6,
+                      "georgian texts": 37}
     cover = sql("SELECT value FROM settings WHERE key='cover'")[0]["value"]
     assert cover == str(sql("SELECT MIN(id) AS i FROM gallery")[0]["i"])
 

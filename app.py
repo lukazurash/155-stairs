@@ -218,6 +218,7 @@ def init_db():
     add_column(con, "categories", "name_ka", "TEXT NOT NULL DEFAULT ''")
     add_column(con, "reservations", "tables", "TEXT NOT NULL DEFAULT ''")
     add_column(con, "reservations", "source", "TEXT NOT NULL DEFAULT 'web'")
+    add_column(con, "gallery", "caption_ka", "TEXT NOT NULL DEFAULT ''")
     con.execute("UPDATE reservations SET tables=CAST(table_no AS TEXT) WHERE tables=''")
     for k, v in DEFAULTS.items():
         con.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
@@ -287,6 +288,8 @@ def money(cents):
 def inject():
     ctx = {"s": S(), "hours": db().execute("SELECT * FROM hours ORDER BY day").fetchall(), "day_names": DAYS, "v": ASSET_V}
     ctx["hours_groups"] = hours_groups(ctx["hours"])
+    cover = db().execute("SELECT image FROM gallery ORDER BY CAST(id AS TEXT)=? DESC, id LIMIT 1", (S()["cover"],)).fetchone()
+    ctx["og_image"] = request.url_root.rstrip("/") + cover["image"] if cover else None  # the picture link previews show
     session.setdefault("csrf", secrets.token_hex(16))
     ctx["csrf"] = session["csrf"]
     if session.get("admin"):
@@ -302,6 +305,8 @@ def headers(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["Referrer-Policy"] = "same-origin"
+    if PRODUCTION:
+        resp.headers["Strict-Transport-Security"] = "max-age=31536000"  # browsers go straight to https next time
     return resp
 
 
@@ -474,6 +479,28 @@ def contact():
 @app.get("/favicon.ico")
 def favicon():
     return redirect("/static/favicon.svg", 301)  # for browsers and crawlers that ask for the old file name
+
+
+PUBLIC_PAGES = ["/", "/menu", "/drinks", "/events", "/contact", "/reserve"]
+
+
+@app.get("/robots.txt")
+def robots():
+    return f"User-agent: *\nDisallow: /admin\nSitemap: {request.url_root}sitemap.xml\n", 200, {"Content-Type": "text/plain"}
+
+
+@app.get("/sitemap.xml")
+def sitemap():
+    urls = "".join(f"<url><loc>{request.url_root.rstrip('/')}{p}</loc></url>" for p in PUBLIC_PAGES)
+    return (f'<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>',
+            200, {"Content-Type": "application/xml"})
+
+
+@app.errorhandler(404)
+def not_found(_):
+    if request.path.startswith("/api/"):
+        return jsonify(error="Not found."), 404
+    return render_template("404.html"), 404
 
 
 @app.get("/media/<path:name>")
@@ -1026,7 +1053,8 @@ def admin_gallery():
             flash(str(e))
             return redirect(url_for("admin_gallery"))
         if path:
-            db().execute("INSERT INTO gallery(image,caption) VALUES(?,?)", (path, request.form.get("caption", "").strip()[:120]))
+            db().execute("INSERT INTO gallery(image,caption,caption_ka) VALUES(?,?,?)", (path, request.form.get("caption", "").strip()[:120],
+                         request.form.get("caption_ka", "").strip()[:120]))
             flash("Photo added.")
         else:
             flash("Choose a photo first.")
