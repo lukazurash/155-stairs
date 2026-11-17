@@ -77,6 +77,14 @@ Open http://127.0.0.1:5000. The admin panel is at http://127.0.0.1:5000/admin, a
 
 On macOS or Linux, use `source venv/bin/activate` instead of the second line.
 
+To fill the site with demo photos, sample reviews and a special (only empty fields are filled, so it is safe on a site in use):
+
+```
+python scripts/demo_content.py
+```
+
+Demo photos are from [Unsplash](https://unsplash.com) under the Unsplash License; see [static/demo/CREDITS.md](static/demo/CREDITS.md).
+
 ## Tests
 
 ```
@@ -96,7 +104,8 @@ templates/        HTML pages (Jinja)
 static/css, js/   styles and scripts
 static/uploads/   uploaded photos (not in Git)
 tests/            pytest tests
-scripts/          screenshots.py (README screenshots)
+scripts/          screenshots.py (README screenshots), demo_content.py (demo photos and reviews)
+static/demo/      demo photos (Unsplash) and their credits
 docs/screenshots/ README images
 data/cafe.db      database (created on first run, not in Git)
 ```

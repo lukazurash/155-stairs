@@ -27,6 +27,7 @@ os.environ.pop("ADMIN_PASSWORD", None)
 sys.path.insert(0, str(ROOT))
 
 import app as cafe  # noqa: E402  (after the environment is set)
+import demo_content  # noqa: E402  (scripts/demo_content.py, next to this file)
 from playwright.sync_api import sync_playwright  # noqa: E402
 from werkzeug.serving import make_server  # noqa: E402
 
@@ -49,16 +50,6 @@ def seed():
                     "VALUES(?,?,?,?,?,?,?,?,?,?,?)", (f"155-DEMO0{i}", name, phone, TOMORROW, time, guests,
                                                       int(tables.split(",")[0]), tables, notes, status,
                                                       "staff" if name == "Walk-in" else "web"))
-    con.executemany("INSERT INTO reviews(name,rating,text,sample) VALUES(?,?,?,1)", [
-        ("Mariam", 5, "Worth every one of the steps. The honey cake is the best in town."),
-        ("David", 5, "Quiet, warm and friendly. Perfect for a long coffee and a book."),
-        ("Elene", 4, "Lovely khachapuri and a great view from the terrace."),
-    ])
-    con.execute("UPDATE settings SET value='Pumpkin soup with roasted walnuts' WHERE key='special'")
-    con.execute("UPDATE settings SET value='გოგრის წვნიანი შემწვარი ნიგვზით' WHERE key='special_ka'")
-    con.execute("UPDATE settings SET value='მყუდრო კაფე კიბის თავზე.' WHERE key='tagline_ka'")
-    con.execute("UPDATE dining_tables SET description='By the window, view over the old town' WHERE id=2")
-    con.execute("UPDATE dining_tables SET description='On the terrace under the vines' WHERE id=4")
     chat = con.execute("INSERT INTO chats(token,name) VALUES('demo-chat','Guest')").lastrowid
     con.executemany("INSERT INTO chat_messages(chat_id,sender,body,seen) VALUES(?,?,?,?)", [
         (chat, "visitor", "Hi! Do you have a high chair for a toddler?", 1),
@@ -67,6 +58,7 @@ def seed():
     ])
     con.commit()
     con.close()
+    demo_content.fill(cafe.DB_PATH)  # photos, reviews, special
 
 
 def main():
