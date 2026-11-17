@@ -4,6 +4,8 @@ A full website for **155 Stairs**, a made-up café in Tbilisi, Georgia: a public
 
 **Live demo: https://lukazurashvili.pythonanywhere.com**
 
+Want to see the owner's side? Open [the admin login](https://lukazurashvili.pythonanywhere.com/admin/login) and click **Look around (read-only demo)**: every page is there, nothing can be changed, and guests' personal details are hidden.
+
 > Concept project for my portfolio. The café, address and phone number are not real.
 
 ![Home page](docs/screenshots/home.png)
@@ -112,7 +114,7 @@ data/cafe.db      database (created on first run, not in Git)
 
 ## Putting it online
 
-Set these environment variables: `PRODUCTION=1`, `SECRET_KEY` (a long random string) and `ADMIN_PASSWORD`. Start command: `gunicorn app:app`.
+Set these environment variables: `PRODUCTION=1`, `SECRET_KEY` (a long random string) and `ADMIN_PASSWORD`. Optional: `DEMO_ADMIN=1` adds the read-only "Look around" button to the admin login. Start command: `gunicorn app:app`.
 
 The database and photos are files, so use a host with a **persistent disk**, and point `DB_PATH` and `UPLOAD_DIR` at it. On many free hosts, files are wiped on every restart.
 

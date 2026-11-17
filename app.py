@@ -28,6 +28,7 @@ UPLOADS = Path(os.environ.get("UPLOAD_DIR", BASE / "static" / "uploads"))
 UPLOADS.mkdir(parents=True, exist_ok=True)
 PRODUCTION = bool(os.environ.get("PRODUCTION"))
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+DEMO_ADMIN = os.environ.get("DEMO_ADMIN") == "1"  # a read-only "look around" login for portfolio visitors
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY=os.environ.get("SECRET_KEY", "dev-only-change-me"),
@@ -602,7 +603,7 @@ def manage_cancel():
 
 @app.get("/reserved/<ref>")
 def reserved(ref):
-    if ref not in session.get("my_refs", []) and not session.get("admin"):
+    if ref not in session.get("my_refs", []) and not (session.get("admin") and not session.get("demo")):
         return redirect(url_for("manage"))  # strangers must give the phone number too
     r = db().execute("SELECT * FROM reservations WHERE ref=?", (ref,)).fetchone()
     if not r:
@@ -640,6 +641,43 @@ def password_ok(pw):
     return check_password_hash(row["value"], pw) if row else secrets.compare_digest(pw, ADMIN_PASSWORD)
 
 
+DEMO_NOTE = "This is a read-only demo: nothing was changed. Guests' personal details are hidden."
+
+
+@app.before_request
+def demo_is_read_only():
+    if session.get("demo") and request.method == "POST" and request.path.startswith("/admin/")             and request.path not in ("/admin/logout", "/admin/login", "/admin/demo"):
+        flash(DEMO_NOTE)
+        back = urllib.parse.urlparse(request.referrer or "").path
+        return redirect(back if back.startswith("/admin/") else url_for("admin_reservations"))
+
+
+def private(rows, *fields):
+    """Rows as the demo visitor may see them: guests' names, phones, emails and messages masked."""
+    if not session.get("demo"):
+        return rows
+    def mask(field, v):
+        if not v:
+            return v
+        if field == "phone":
+            return "+995 ••• ••• " + v[-2:]
+        if field == "name":
+            return v[0] + "•••"
+        return "(hidden in the demo)"
+    return [{**dict(r), **{f: mask(f, r[f]) for f in fields}} for r in rows]
+
+
+@app.post("/admin/demo")
+def demo_login():
+    check_csrf()
+    if not DEMO_ADMIN:
+        abort(404)
+    session.clear()
+    session["admin"] = session["demo"] = True
+    flash(DEMO_NOTE)
+    return redirect(url_for("admin_reservations"))
+
+
 @app.route("/admin/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -648,14 +686,14 @@ def login():
         FAILS[ip] = [t for t in FAILS.get(ip, []) if now - t < 600]
         if len(FAILS[ip]) >= 5:
             flash("Too many attempts. Please wait 10 minutes.")
-            return render_template("admin_login.html"), 429
+            return render_template("admin_login.html", demo_admin=DEMO_ADMIN), 429
         if password_ok(request.form.get("password", "")):
             session.clear()
             session["admin"] = True
             return redirect(url_for("admin_reservations"))
         FAILS[ip].append(now)
         flash("Wrong password.")
-    return render_template("admin_login.html")
+    return render_template("admin_login.html", demo_admin=DEMO_ADMIN)
 
 
 @app.post("/admin/logout")
@@ -679,8 +717,9 @@ def admin_reservations():
         day = date.fromisoformat(request.args.get("date", "")).isoformat()
     except ValueError:
         day = today.isoformat()
-    rows = db().execute("SELECT * FROM reservations WHERE date=? ORDER BY time, table_no", (day,)).fetchall()
-    pending = db().execute("SELECT * FROM reservations WHERE status='pending' AND date>=? ORDER BY date, time", (today.isoformat(),)).fetchall()
+    guest = ("name", "phone", "email", "notes")
+    rows = private(db().execute("SELECT * FROM reservations WHERE date=? ORDER BY time, table_no", (day,)).fetchall(), *guest)
+    pending = private(db().execute("SELECT * FROM reservations WHERE status='pending' AND date>=? ORDER BY date, time", (today.isoformat(),)).fetchall(), *guest)
     upcoming = db().execute("""SELECT date, COUNT(*) AS n, SUM(guests) AS guests FROM reservations
         WHERE status IN ('confirmed','arrived') AND date>? AND date<=? GROUP BY date ORDER BY date""",
                             (today.isoformat(), (today + timedelta(days=7)).isoformat())).fetchall()
@@ -1079,20 +1118,23 @@ def chat_messages():
 def admin_chats():
     chats = db().execute("""SELECT c.*, (SELECT COUNT(*) FROM chat_messages m WHERE m.chat_id=c.id AND m.sender='visitor' AND m.seen=0) AS unread,
         (SELECT body FROM chat_messages m WHERE m.chat_id=c.id ORDER BY id DESC LIMIT 1) AS last FROM chats c ORDER BY last_at DESC LIMIT 100""").fetchall()
+    chats = private(chats, "last")
     open_id = request.args.get("open", type=int)
     current = next((c for c in chats if c["id"] == open_id), None)
     msgs = []
     if current:
-        db().execute("UPDATE chat_messages SET seen=1 WHERE chat_id=? AND sender='visitor'", (open_id,))
-        msgs = db().execute("SELECT id, sender, body FROM chat_messages WHERE chat_id=? ORDER BY id", (open_id,)).fetchall()
+        if not session.get("demo"):  # a demo visitor must not mark the owner's messages as read
+            db().execute("UPDATE chat_messages SET seen=1 WHERE chat_id=? AND sender='visitor'", (open_id,))
+        msgs = private(db().execute("SELECT id, sender, body FROM chat_messages WHERE chat_id=? ORDER BY id", (open_id,)).fetchall(), "body")
     return render_template("admin_chats.html", tab="chats", chats=chats, current=current, msgs=msgs)
 
 
 @app.get("/admin/api/chats/<int:cid>")
 @admin_required
 def admin_chat_poll(cid):
-    rows = db().execute("SELECT id, sender, body FROM chat_messages WHERE chat_id=? AND id>? ORDER BY id", (cid, request.args.get("after", 0, type=int))).fetchall()
-    db().execute("UPDATE chat_messages SET seen=1 WHERE chat_id=? AND sender='visitor'", (cid,))
+    rows = private(db().execute("SELECT id, sender, body FROM chat_messages WHERE chat_id=? AND id>? ORDER BY id", (cid, request.args.get("after", 0, type=int))).fetchall(), "body")
+    if not session.get("demo"):
+        db().execute("UPDATE chat_messages SET seen=1 WHERE chat_id=? AND sender='visitor'", (cid,))
     return jsonify([dict(r) for r in rows])
 
 
@@ -1136,7 +1178,7 @@ def events():
 @app.get("/admin/requests")
 @admin_required
 def admin_requests():
-    rows = db().execute("SELECT * FROM enquiries ORDER BY id DESC LIMIT 200").fetchall()
+    rows = private(db().execute("SELECT * FROM enquiries ORDER BY id DESC LIMIT 200").fetchall(), "name", "phone", "email", "message")
     return render_template("admin_requests.html", tab="requests", rows=rows, kinds=KINDS)
 
 
