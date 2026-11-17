@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="{{ lang() }}"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ s.name }}{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{% if s.font_style == 'modern' %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&family=Noto+Sans+Georgian:wght@400;600;700&display=swap" rel="stylesheet">
+{% else %}<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Playfair+Display:wght@500;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap" rel="stylesheet">{% endif %}
+<link rel="stylesheet" href="/static/css/style.css?v={{ v }}">
+<style>:root{--wood:{{ s.color_dark }};--wood2:color-mix(in srgb,{{ s.color_dark }} 80%,#fff);--accent:{{ s.color_accent }};--gold:{{ s.color_gold }};
+{% if s.font_style == 'modern' %}--head:Poppins,"Noto Sans Georgian",sans-serif;--body:Inter,"Noto Sans Georgian",sans-serif;{% else %}--head:"Playfair Display","Noto Serif Georgian",Georgia,serif;--body:Lora,"Noto Serif Georgian",Georgia,serif;{% endif %}}</style></head>
+<body data-greeting="{{ loc(s, 'chat_greeting') }}" data-chat-title="{{ _('Chat with us') }}" data-chat-ph="{{ _('Type your message') }}" data-chat-send="{{ _('Send') }}">
+{% from "_macros.html" import logo %}
+<header class="top"><a class="brand" href="/" aria-label="{{ s.name }}">{{ logo(s) }}</a>
+<nav class="mainnav"><a href="/" class="{{ 'on' if request.path == '/' }}">{{ _('Home') }}</a><a href="/menu" class="{{ 'on' if request.path == '/menu' }}">{{ _('Menu') }}</a><a href="/drinks" class="{{ 'on' if request.path == '/drinks' }}">{{ _('Drinks') }}</a><a href="/events" class="{{ 'on' if request.path == '/events' }}">{{ _('Events and vouchers') }}</a><a href="/contact" class="{{ 'on' if request.path == '/contact' }}">{{ _('Contact') }}</a></nav>
+<div class="topright"><a class="lang" href="/lang/{{ 'en' if lang() == 'ka' else 'ka' }}?next={{ request.path }}">{{ 'English' if lang() == 'ka' else 'ქართული' }}</a></div></header>
+<main>{% block body %}{% endblock %}</main>
+<footer><div class="cols"><div><strong>{{ s.name }}</strong><p>{{ loc(s, 'tagline') }}</p></div>
+<div><strong>{{ _('Find us') }}</strong><p>{{ s.address }}<br><a href="tel:{{ s.phone|replace(' ', '') }}">{{ s.phone }}</a><br><a href="mailto:{{ s.email }}">{{ s.email }}</a></p></div>
+<div><strong>{{ _('Opening hours') }}</strong><p>{% for g in hours_groups %}{{ g.label }}<br>{{ g.text }}<br>{% endfor %}</p></div></div>
+<p class="fine">{% if s.instagram %}<a href="{{ s.instagram }}" target="_blank" rel="noopener">Instagram</a> · {% endif %}{% if s.whatsapp %}<a href="https://wa.me/{{ s.whatsapp }}" target="_blank" rel="noopener">WhatsApp</a> · {% endif %}{% if s.google_reviews %}<a href="{{ s.google_reviews }}" target="_blank" rel="noopener">Google</a> · {% endif %}<a href="/manage">{{ _('Manage a booking') }}</a> · © {{ s.name }}</p>
+<p class="fine concept">{{ _("Concept project: a fictional cafe made to show an online booking system. Not a real business.") }}</p></footer>
+{% if request.path != '/reserve' %}<a class="reservefab" href="/reserve">{{ _('Reserve a table') }}</a>{% endif %}
+{% block script %}{% endblock %}<script src="/static/js/site.js?v={{ v }}"></script><script src="/static/js/chat.js?v={{ v }}"></script></body></html>

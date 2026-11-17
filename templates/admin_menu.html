@@ -1,0 +1,30 @@
+{% extends "admin_base.html" %}{% block body %}
+<h1>Menu</h1>
+<section class="panel"><h2>{{ 'Edit ' + edit.name if edit else 'Add a dish' }}</h2>
+<form method="post" action="/admin/menu/save" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf" value="{{ csrf }}">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
+<div class="two"><label>Name<input name="name" maxlength="100" value="{{ edit.name if edit else '' }}" required></label>
+<label>Category<select name="category_id">{% for c in cats %}<option value="{{ c.id }}" {{ 'selected' if edit and edit.category_id == c.id }}>{{ c.name }}</option>{% endfor %}</select></label></div>
+<label>Description<textarea name="description" rows="2" maxlength="400">{{ edit.description if edit else '' }}</textarea></label>
+<div class="two"><label>Georgian name (optional)<input name="name_ka" maxlength="100" value="{{ edit.name_ka if edit else '' }}"></label><label>Georgian ingredients (optional)<input name="ingredients_ka" maxlength="300" value="{{ edit.ingredients_ka if edit else '' }}"></label></div>
+<label>Georgian description (optional)<textarea name="description_ka" rows="2" maxlength="400">{{ edit.description_ka if edit else '' }}</textarea></label>
+<label>Ingredients (separate with commas)<input name="ingredients" maxlength="300" value="{{ edit.ingredients if edit else '' }}"></label>
+<div class="two"><label>Price ({{ s.currency }})<input name="price" value="{{ (edit.price_cents / 100)|round(2) if edit else '' }}" required></label>
+<label>Small label (for example Vegetarian)<input name="tag" maxlength="30" value="{{ edit.tag if edit else '' }}"></label></div>
+<label>Photo (PNG, JPG or WEBP, max 3 MB){% if edit and edit.image %} <img class="thumb" src="{{ edit.image }}" alt="">{% endif %}<input type="file" name="photo" accept="image/png,image/jpeg,image/webp"></label>
+{% if edit and edit.image %}<label class="check"><input type="checkbox" name="remove_photo"> Remove the current photo</label>{% endif %}
+<fieldset class="diets"><legend>Diet labels</legend>{% for dt in diets %}<label class="check"><input type="checkbox" name="diet" value="{{ dt }}" {{ 'checked' if edit and dt in edit.diet.split(',') }}> {{ dt|capitalize }}</label>{% endfor %}</fieldset>
+<label class="check"><input type="checkbox" name="sold_out" {{ 'checked' if edit and edit.sold_out }}> Sold out today</label>
+<label class="check"><input type="checkbox" name="featured" {{ 'checked' if edit and edit.featured }}> Show on the home page as a favourite</label>
+<label class="check"><input type="checkbox" name="visible" {{ 'checked' if not edit or edit.visible }}> Show on the menu</label>
+<p><button class="btn" type="submit">Save dish</button> {% if edit %}<a class="btn alt" href="/admin/menu">Cancel</a>{% endif %}</p></form></section>
+<h2>Dishes</h2>{% for d in dishes %}<div class="res"><div><strong>{{ d.name }}</strong> · {{ d.cat }} · {{ s.currency }}{{ d.price_cents|money }} {% if d.sold_out %}<span class="pill cancelled">sold out</span>{% endif %}{% if not d.visible %}<span class="pill cancelled">hidden</span>{% endif %}{% if d.featured %}<span class="pill confirmed">favourite</span>{% endif %}</div>
+<form method="post" action="/admin/menu/delete/{{ d.id }}" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><a class="btn small" href="/admin/menu?edit={{ d.id }}">Edit</a>
+<button class="btn small alt" formaction="/admin/menu/{{ d.id }}/soldout">{{ 'Back in stock' if d.sold_out else 'Sold out today' }}</button><button class="btn small alt" data-confirm="Delete {{ d.name }}?">Delete</button></form></div>{% endfor %}
+<h2>Categories</h2><p class="muted">A lower order number appears first on the menu.</p>
+{% for c in cats %}<form method="post" action="/admin/categories/save" class="inline row"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="id" value="{{ c.id }}">
+<input name="name" value="{{ c.name }}" maxlength="40"><input name="name_ka" value="{{ c.name_ka }}" maxlength="40" placeholder="Georgian name"><select name="icon">{% for i in icons %}<option {{ 'selected' if c.icon == i }}>{{ i }}</option>{% endfor %}</select><select name="section"><option value="food" {{ 'selected' if c.section == 'food' }}>on Menu page</option><option value="drinks" {{ 'selected' if c.section == 'drinks' }}>on Drinks page</option></select>
+<input name="sort" type="number" value="{{ c.sort }}" class="num"><button class="btn small">Save</button>
+<button class="btn small alt" formaction="/admin/categories/delete/{{ c.id }}" data-confirm="Delete category {{ c.name }}?">Delete</button></form>{% endfor %}
+<form method="post" action="/admin/categories/save" class="inline row"><input type="hidden" name="csrf" value="{{ csrf }}"><input name="name" placeholder="New category name" maxlength="40"><input name="name_ka" placeholder="Georgian name (optional)" maxlength="40">
+<select name="icon">{% for i in icons %}<option>{{ i }}</option>{% endfor %}</select><select name="section"><option value="food">on Menu page</option><option value="drinks">on Drinks page</option></select><input name="sort" type="number" value="99" class="num"><button class="btn small">Add category</button></form>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "admin_base.html" %}{% block body %}<h1>Chat with guests</h1>
+<div class="convo"><div class="clist">{% for c in chats %}<a href="/admin/chats?open={{ c.id }}" class="{{ 'on' if current and current.id == c.id }}"><strong>{{ c.name }} #{{ c.id }}</strong>{% if c.unread %}<span class="count">{{ c.unread }}</span>{% endif %}<br><span class="muted">{{ (c.last or '')[:40] }}</span></a>{% else %}<p class="muted">No chats yet. Messages from guests appear here.</p>{% endfor %}</div>
+<div>{% if current %}<h3>Conversation #{{ current.id }}</h3><div class="msgs" id="msgs" data-id="{{ current.id }}">{% for m in msgs %}<div class="bub {{ 'me' if m.sender == 'admin' else 'admin' }}" data-id="{{ m.id }}">{{ m.body }}</div>{% endfor %}</div>
+<form method="post" action="/admin/chats/{{ current.id }}/reply" class="inline" style="margin-top:10px"><input type="hidden" name="csrf" value="{{ csrf }}"><input name="body" maxlength="1000" placeholder="Type a reply" autocomplete="off" autofocus style="flex:1"><button class="btn">Send</button></form>
+{% else %}<p class="muted">Choose a conversation on the left.</p>{% endif %}</div></div>
+{% if current %}<script src="/static/js/admin-chat.js"></script>{% endif %}{% endblock %}

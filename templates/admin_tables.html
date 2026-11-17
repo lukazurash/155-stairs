@@ -1,0 +1,17 @@
+{% extends "admin_base.html" %}{% block body %}<h1>Tables</h1>
+<p class="muted">Guests see a photo of each free table and choose the one they like. Tables that are already booked at the chosen time are hidden from the guest.</p>
+<section class="panel"><h2>{{ 'Edit ' + edit.name if edit else 'Add a table' }}</h2>
+<form method="post" action="/admin/tables/save" enctype="multipart/form-data" class="form"><input type="hidden" name="csrf" value="{{ csrf }}">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
+<div class="two"><label>Name (for example Window table, Terrace 2)<input name="name" maxlength="60" value="{{ edit.name if edit else '' }}" required></label>
+<label>Where is it?<select name="zone"><option value="inside" {{ 'selected' if edit and edit.zone == 'inside' }}>Inside</option><option value="outside" {{ 'selected' if edit and edit.zone == 'outside' }}>Outside</option></select></label></div>
+<div class="two"><label>Seats<input type="number" name="seats" min="1" max="20" value="{{ edit.seats if edit else 4 }}" required></label><label>Georgian name (optional)<input name="name_ka" maxlength="60" value="{{ edit.name_ka if edit else '' }}"></label></div>
+<label>Short description (for example "next to the window, quiet")<input name="description" maxlength="300" value="{{ edit.description if edit else '' }}"></label>
+<label>Georgian description (optional)<input name="description_ka" maxlength="300" value="{{ edit.description_ka if edit else '' }}"></label>
+<label>Photo of this table (PNG, JPG or WEBP, max 3 MB){% if edit and edit.image %} <img class="thumb" src="{{ edit.image }}" alt="">{% endif %}<input type="file" name="photo" accept="image/png,image/jpeg,image/webp"></label>
+{% if edit and edit.image %}<label class="check"><input type="checkbox" name="remove_photo"> Remove the current photo</label>{% endif %}
+<label class="check"><input type="checkbox" name="active" {{ 'checked' if not edit or edit.active }}> This table can be booked</label>
+<p><button class="btn">Save table</button> {% if edit %}<a class="btn alt" href="/admin/tables">Cancel</a>{% endif %}</p></form></section>
+<h2>All tables ({{ s.table_count }} bookable, {{ s.total_seats }} seats)</h2>
+<div class="gal">{% for t in rows %}<div class="panel">{% if t.image %}<img class="gimg" src="{{ t.image }}" alt="">{% else %}<div class="gimg noimg">No photo yet</div>{% endif %}
+<p><strong>{{ t.name }}</strong> · {{ t.zone|capitalize }} · {{ t.seats }} seats{% if not t.active %} <span class="pill cancelled">off</span>{% endif %}</p>
+<form method="post" action="/admin/tables/{{ t.id }}/delete" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><a class="btn small" href="/admin/tables?edit={{ t.id }}">Edit</a><button class="btn small alt" data-confirm="Delete {{ t.name }}?">Delete</button></form></div>{% endfor %}</div>{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "admin_base.html" %}{% block body %}<h1>Closed dates</h1>
+<p class="muted">Block a whole day or a time range, for a holiday, a private party or a repair. Guests cannot book those times.</p>
+<section class="panel"><form method="post" class="form"><input type="hidden" name="csrf" value="{{ csrf }}"><div class="two"><label>Date<input type="date" name="date" required></label><label>Reason (only you see it)<input name="reason" maxlength="100"></label></div>
+<label class="check"><input type="checkbox" name="whole" checked> Closed the whole day</label><div class="two"><label>Or only from<input type="time" name="start"></label><label>until<input type="time" name="end"></label></div>
+<p class="muted small">To block only a time range, untick "whole day" first.</p><p><button class="btn">Block this time</button></p></form></section>
+{% for c in rows %}<div class="res"><div><strong>{{ c.date }}</strong> · {{ 'Whole day' if not c.start else c.start + ' - ' + c.end }}{% if c.reason %} · {{ c.reason }}{% endif %}</div>
+<form method="post" action="/admin/closures/{{ c.id }}/delete" class="inline"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="btn small alt">Remove</button></form></div>{% else %}<p>No closed dates coming up.</p>{% endfor %}{% endblock %}

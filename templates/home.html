@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "_macros.html" import scene, photo, signature, stars %}{% block body %}
+<section class="hero">{% if slides|length > 1 %}{% for p in slides %}<img class="bg slide{{ ' on' if loop.first }}" src="{{ p.image }}" alt="">{% endfor %}{% elif slides %}<img class="bg" src="{{ slides[0].image }}" alt="">{% else %}{{ scene() }}{% endif %}
+<div class="hero-in"><p class="eyebrow">{{ _('Cafe · Wine · Desserts') }}</p><h1>{{ s.name }}</h1><p class="lead">{{ loc(s, 'tagline') }}</p>
+<p class="herobtns"><a class="btn gold" href="/menu">{{ _('See the menu') }}</a> <a class="btn alt" href="#inside">{{ _('Step inside') }}</a></p></div></section>
+{% if s.special %}<section class="special"><strong>{{ _("Today's special") }}</strong> {{ loc(s, 'special') }}</section>{% endif %}
+{% if s.steps_count %}<section class="steps"><div class="wrap center"><p class="eyebrow">{{ _('Our story') }}</p><div class="count-steps" data-to="{{ s.steps_count }}">{{ s.steps_count }}</div><p class="stepstext">{{ loc(s, 'steps_text') }}</p></div></section>{% endif %}
+<section class="wrap" id="about"><div class="aboutgrid"><div><p class="eyebrow dark">{{ _('About us') }}</p><h2>{{ s.name }}</h2><p class="story left">{{ loc(s, 'about') }}</p></div>
+<div class="panel infocard"><h3>{{ _('Opening hours') }}</h3>{% for g in hours_groups %}<div class="hrow"><span>{{ g.label }}</span><strong>{{ g.text }}</strong></div>{% endfor %}
+<h3 class="gap">{{ _('Find us') }}</h3><p>{{ s.address }}<br><a href="tel:{{ s.phone|replace(' ', '') }}">{{ s.phone }}</a></p></div></div></section>
+<section class="wrap" id="inside"><h2 class="center">{{ _('Step inside') }}</h2><p class="center muted">{{ _('Warm light, wooden tables and a quiet corner waiting for you.') }}</p>
+<div class="trio">{% if photos %}{% for p in photos[:3] %}<figure>{{ photo(p) }}</figure>{% endfor %}{% else %}{% for i in range(3) %}<figure>{{ scene() }}</figure>{% endfor %}{% endif %}</div>
+</section>
+<section class="wrap"><h2 class="center">{{ _('Signature dishes') }}</h2><p class="center muted">{{ _('Made fresh, with ingredients you can read.') }}</p>
+<div class="sigs">{% for d in favourites %}{{ signature(d, s) }}{% endfor %}</div>
+<p class="center"><a class="btn alt" href="/menu">{{ _('See the menu') }}</a> <a class="btn alt" href="/drinks">{{ _('See the drinks') }}</a></p></section>
+{% if reviews %}<section class="band"><div class="wrap"><h2 class="center">{{ _('What our guests say') }}</h2>
+<p class="center rating">{{ stars(avg|round|int) }} <strong>{{ avg }}</strong> · {{ reviews|length }} {{ _('reviews') }}</p>
+<div class="revs">{% for r in reviews[:3] %}<blockquote>{{ stars(r.rating) }}<p>{{ r.text }}</p><cite>{{ r.name }}</cite></blockquote>{% endfor %}</div></div></section>{% endif %}
+<section class="wrap" id="reserve"><div class="cta"><div><h2>{{ _('Come and sit with us') }}</h2><p>{{ s.address }}<br>{{ s.table_count }} {{ _('tables') }} · {{ _('reservations take a minute') }}</p>
+<p class="muted small">{{ _('Planning a birthday or a special evening?') }} <a class="linkbtn" href="/events">{{ _('Tell us about it') }}</a> · <button type="button" class="linkbtn" data-open-chat>{{ _('Chat with us') }}</button></p></div>
+<form action="/reserve" method="get" class="quick"><label>{{ _('Date') }}<input type="date" name="date" value="{{ today }}" min="{{ today }}" max="{{ last }}"></label>
+<label>{{ _('Guests') }}<select name="guests">{% for n in range(1, ([s.max_group|int, s.total_seats|int]|min) + 1) %}<option value="{{ n }}" {{ 'selected' if n == 2 }}>{{ n }}</option>{% endfor %}</select></label>
+<button class="btn gold">{{ _('Find a table') }}</button></form></div></section>
+{% endblock %}{% block script %}<script src="/static/js/home.js?v={{ v }}"></script>{% endblock %}

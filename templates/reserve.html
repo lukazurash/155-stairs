@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}{{ _('Reserve a table') }} - {{ s.name }}{% endblock %}{% block body %}
+<section class="pagehead"><h1>{{ _('Reserve a table') }}</h1><p>{{ _('Four quick steps.') }} {{ _('Choose the table you like; bigger groups can combine tables.') }} {{ _('Your table is held for') }} {{ s.slot_minutes }} {{ _('minutes.') }}</p></section>
+{% set maxg = [s.max_group|int, s.total_seats|int]|min %}<section class="wrap narrow">{% if error %}<div class="alert">{{ _(error) }}</div>{% endif %}
+<form method="post" class="form booking"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="text" name="website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+<h2 class="step"><b>1</b> {{ _('When?') }}</h2>
+<div class="chips"><button type="button" class="chip" data-date="{{ today }}">{{ _('Today') }}</button><button type="button" class="chip" data-date="{{ tomorrow }}">{{ _('Tomorrow') }}</button>
+<input type="date" id="date" name="date" min="{{ today }}" max="{{ last }}" value="{{ form.get('date') or today }}" required class="dateinput"></div>
+<h2 class="step"><b>2</b> {{ _('How many guests?') }}</h2>
+<div class="chips">{% for n in range(1, maxg + 1) %}<label class="pick"><input type="radio" name="guests" value="{{ n }}" {{ 'checked' if form.get('guests') == n|string or (not form.get('guests') and n == 2) }}><span>{{ n }}</span></label>{% endfor %}</div>
+<p class="muted small">{{ _('Special occasion, or a bigger group?') }} <a class="linkbtn" href="/events">{{ _('Tell us about it') }}</a> · <button type="button" class="linkbtn" data-open-chat>{{ _('Chat with us') }}</button></p>
+<h2 class="step"><b>3</b> {{ _('Pick a time') }}</h2><div id="times" class="chips" data-selected="{{ form.get('time', '') }}" data-seats="{{ _('seats') }}" data-full="{{ _('full') }}"></div><p id="avail" class="muted" data-none="{{ _('No bookable times on this day. Please try another date.') }}" data-err="{{ _('Could not check availability. Please try again.') }}"></p>
+<h2 class="step"><b>4</b> {{ _('Choose your table') }}</h2>
+<div id="tablebox" data-selected="{{ form.getlist('tables')|join(',') }}" data-hint="{{ _('Choose a time first to see the free tables.') }}" data-none="{{ _('No tables are free at this time. Please pick another time.') }}" data-seats="{{ _('seats') }}" data-picked="{{ _('Selected seats') }}" data-all="{{ _('All') }}" data-inside="{{ _('Inside') }}" data-outside="{{ _('Outside') }}">
+<p id="tablehint" class="muted"></p><div id="zones" class="chips"></div><div id="tablelist" class="tablegrid"></div><p id="seatinfo" class="seatinfo"></p></div>
+<h2 class="step"><b>5</b> {{ _('Your details') }}</h2>
+<div class="two"><label>{{ _('Your name') }}<input name="name" maxlength="80" value="{{ form.get('name', '') }}" required></label><label>{{ _('Phone') }}<input name="phone" type="tel" maxlength="30" value="{{ form.get('phone', '') }}" required></label></div>
+<label>{{ _('Occasion or notes (optional)') }}<textarea name="notes" rows="2" maxlength="500" placeholder="{{ _('Birthday, high chair, allergies...') }}">{{ form.get('notes', '') }}</textarea></label>
+<label>{{ _('Email (optional)') }}<input name="email" type="email" maxlength="120" value="{{ form.get('email', '') }}"></label>
+<p class="muted small">{{ _('We use your name and phone number only to manage your booking.') }}</p>
+<button class="btn gold big" type="submit">{{ _('Request reservation') }}</button></form></section>{% endblock %}
+{% block script %}<script src="/static/js/reserve.js?v={{ v }}"></script>{% endblock %}

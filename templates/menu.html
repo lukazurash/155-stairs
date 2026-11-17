@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% from "_macros.html" import dish %}{% block title %}{{ _(heading) }} - {{ s.name }}{% endblock %}{% block body %}
+<section class="pagehead"><h1>{{ _(heading) }}</h1><p>{{ _(intro) }} {{ _('Prices are shown in') }} {{ s.currency }}. {{ _('Please tell us about any allergies.') }}</p>
+<p class="noprint"><button type="button" class="btn small alt" data-print>{{ _('Print or save as PDF') }}</button></p></section>
+<section class="wrap"><nav class="chips noprint">{% for c in cats %}<a class="chip" href="#cat{{ c.id }}">{{ loc(c, 'name') }}</a>{% endfor %}</nav>
+{% for c in cats %}{% set items = dishes|selectattr('category_id', 'equalto', c.id)|list %}{% if items %}<h2 id="cat{{ c.id }}" class="cathead">{{ loc(c, 'name') }}</h2>
+<div class="dishes">{% for d in items %}{{ dish(d, s) }}{% endfor %}</div>{% endif %}{% endfor %}</section>{% endblock %}

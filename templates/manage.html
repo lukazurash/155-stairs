@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}{{ _('Manage a booking') }} - {{ s.name }}{% endblock %}{% block body %}
+<section class="pagehead"><h1>{{ _('Manage a booking') }}</h1><p>{{ _('Enter your reference and phone number to see or cancel your reservation.') }}</p></section>
+<section class="wrap narrow">{% if done %}<div class="flash">{{ _('Your reservation is cancelled. We hope to see you another time!') }}</div>{% endif %}{% if error %}<div class="alert">{{ _(error) }}</div>{% endif %}
+{% if r %}<div class="panel"><p><strong>{{ r.date }} · {{ r.time }}</strong><br>{{ r.guests }} {{ _('guests') }} · {{ r.name }} · {{ _('status') }}: {{ _(r.status|replace('_', ' ')) }}</p>
+{% if r.status in ('pending', 'confirmed') %}<form method="post" action="/manage/cancel"><input type="hidden" name="ref" value="{{ r.ref }}"><input type="hidden" name="phone" value="{{ r.phone }}"><button class="btn alt" data-confirm="{{ _('Cancel reservation') }}?">{{ _('Cancel reservation') }}</button></form>
+<p class="muted small">{{ _('To change the time or the number of guests, cancel here and book again, or chat with us.') }}</p>{% endif %}</div>
+{% elif not done %}<form method="post" class="form"><label>{{ _('Reference (like 155-AB12CD)') }}<input name="ref" required></label><label>{{ _('Phone number you booked with') }}<input name="phone" type="tel" required></label><button class="btn" type="submit">{{ _('Find my booking') }}</button></form>{% endif %}</section>{% endblock %}

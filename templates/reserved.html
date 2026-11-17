@@ -1,0 +1,5 @@
+{% extends "base.html" %}{% block body %}<section class="wrap narrow center"><h1>{{ _('You are booked!') if r.status == 'confirmed' else _('Request received') }}</h1>
+<div class="panel"><p><strong>{{ r.date }} · {{ r.time }}</strong><br>{{ r.guests }} {{ _('guests') }} · {{ _('under the name') }} {{ r.name }}</p><p>{{ _('Your table:') }} <strong>{{ r.tables|tablenames }}</strong></p><p>{{ _('Your reference:') }} <strong>{{ r.ref }}</strong></p></div>
+<p>{{ _('Your table is confirmed. See you soon!') if r.status == 'confirmed' else _('We are holding a table for you. We will confirm by phone soon, so please keep your phone nearby.') }}</p>
+<p class="muted">{{ _('Need to change something?') }} {{ _('Call us on') }} {{ s.phone }} · <button type="button" class="linkbtn" data-open-chat>{{ _('Chat with us') }}</button> {{ _('and quote your reference.') }}</p>
+<p><a class="link" href="/manage">{{ _('Manage or cancel this booking') }}</a></p><a class="btn" href="/">{{ _('Back to home') }}</a></section>{% endblock %}

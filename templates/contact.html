@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}{{ _('Contact') }} - {{ s.name }}{% endblock %}{% block body %}
+<section class="pagehead"><h1>{{ _('Contact') }}</h1></section><section class="wrap narrow"><div class="panel"><p><strong>{{ _('Address') }}</strong><br>{{ s.address }}<br><a class="link" href="https://www.google.com/maps/search/?api=1&query={{ s.address|urlencode }}" target="_blank" rel="noopener">{{ _('Open in Google Maps') }}</a></p>
+<p><strong>{{ _('Phone') }}</strong><br><a href="tel:{{ s.phone|replace(' ', '') }}">{{ s.phone }}</a></p><p><strong>{{ _('Email') }}</strong><br><a href="mailto:{{ s.email }}">{{ s.email }}</a></p></div>
+<iframe class="map" title="Map" loading="lazy" src="https://maps.google.com/maps?q={{ s.address|urlencode }}&output=embed"></iframe>
+<h2>{{ _('Opening hours') }}</h2><div class="panel">{% for g in hours_groups %}<div class="hrow"><span>{{ g.label }}</span><strong>{{ g.text }}</strong></div>{% endfor %}</div>
+<p><a class="btn gold" href="/reserve">{{ _('Reserve a table') }}</a></p></section>{% endblock %}

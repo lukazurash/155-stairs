@@ -1,0 +1,22 @@
+{% extends "admin_base.html" %}{% block body %}
+{% macro row(r) %}<div class="res {{ r.status }}"><div><strong>{{ r.date }} {{ r.time }}</strong> · {{ r.tables|tablenames }} · {{ r.guests }} guest{{ '' if r.guests == 1 else 's' }} <span class="pill {{ r.status }}">{{ r.status|replace('_', ' ') }}</span>{% if r.source == 'staff' %}<span class="pill">added by staff</span>{% endif %}</div>
+<div>{{ r.name }}{% if r.phone %} · <a href="tel:{{ r.phone }}">{{ r.phone }}</a>{% endif %}{% if r.email %} · {{ r.email }}{% endif %} · <span class="muted">{{ r.ref }}</span></div>
+{% if r.notes %}<div class="note">“{{ r.notes }}”</div>{% endif %}
+<form method="post" action="/admin/reservations/{{ r.id }}/status" class="inline noprint"><input type="hidden" name="csrf" value="{{ csrf }}"><input type="hidden" name="date" value="{{ day }}">
+{% if r.status == 'pending' %}<button class="btn small" name="status" value="confirmed">Confirm</button>{% endif %}
+{% if r.status in ('pending', 'confirmed') %}<button class="btn small" name="status" value="arrived">Arrived</button><button class="btn small alt" name="status" value="no_show" data-confirm="Mark as no-show? The table becomes free.">No-show</button>{% endif %}
+{% if r.status in ('pending', 'confirmed', 'arrived') %}<button class="btn small alt" name="status" value="cancelled" data-confirm="Cancel this reservation? The table becomes free again.">Cancel</button>{% endif %}</form></div>{% endmacro %}
+<h1>Reservations</h1>
+{% if pending %}<section class="panel noprint"><h2>Waiting for confirmation ({{ pending|length }})</h2>{% for r in pending %}{{ row(r) }}{% endfor %}</section>{% endif %}
+<div class="inline noprint"><form method="get" class="inline"><label>Day <input type="date" name="date" value="{{ day }}"></label><button class="btn small">Show</button></form>
+<a class="btn small alt" href="/admin/reservations">Today</a><button type="button" class="btn small alt" data-print>Print this day</button></div>
+{% set active = rows|selectattr('status', 'in', ['pending', 'confirmed', 'arrived'])|list %}
+<h2 class="printonly">{{ s.name }} - {{ day }}</h2>
+<p class="muted">{{ day }}: {{ active|length }} booking{{ '' if active|length == 1 else 's' }}, {{ active|sum(attribute='guests') }} guests expected. The cafe seats {{ seats }}.</p>
+{% for r in rows %}{{ row(r) }}{% else %}<p>No reservations on this day.</p>{% endfor %}
+<section class="panel noprint"><h2>Add a booking (phone call or walk-in)</h2><p class="muted">The table is assigned automatically and marked taken, so nobody else can book it.</p>
+<form method="post" action="/admin/reservations/new" class="form"><input type="hidden" name="csrf" value="{{ csrf }}">
+<div class="two"><label>Name (optional)<input name="name" maxlength="80"></label><label>Phone (optional)<input name="phone" type="tel" maxlength="30"></label></div>
+<div class="two"><label>Date<input type="date" name="date" value="{{ day }}" required></label><label>Time<input type="time" name="time" required></label></div>
+<div class="two"><label>Guests<input type="number" name="guests" min="1" max="{{ seats }}" value="2" required></label><label>Notes (optional)<input name="notes" maxlength="500"></label></div>
+<p><button class="btn">Add booking</button></p></form></section>{% endblock %}
