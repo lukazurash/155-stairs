@@ -210,3 +210,17 @@ def test_staff_booking_fails_when_cafe_is_full(client):
     staff_book(client, 8)
     staff_book(client, 1)
     assert len(reservations()) == 2
+
+
+def test_confirmed_booking_for_another_day_stays_visible(client):
+    """Bug from the live site: confirming tomorrow's booking jumped back to today's list, so it seemed lost."""
+    book(client, time="16:30")
+    login(client)
+    rid = reservations()[0]["id"]
+    resp = client.post(f"/admin/reservations/{rid}/status",
+                       data={"status": "confirmed", "date": day(0), "csrf": csrf(client)})
+    assert resp.headers["Location"].endswith(f"date={day(1)}")   # goes to the booking's own day
+    page = client.get(resp.headers["Location"]).data
+    assert b"Nino" in page and b"16:30" in page and b"confirmed" in page
+    today = client.get("/admin/reservations").data
+    assert b"Coming up" in today and day(1).encode() in today      # and today's page points to it

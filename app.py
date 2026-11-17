@@ -470,6 +470,11 @@ def contact():
     return render_template("contact.html")
 
 
+@app.get("/favicon.ico")
+def favicon():
+    return redirect("/static/favicon.svg", 301)  # for browsers and crawlers that ask for the old file name
+
+
 @app.get("/media/<path:name>")
 def media(name):
     return send_from_directory(UPLOADS, name, max_age=2592000)  # file names are random, so long caching is safe
@@ -676,8 +681,11 @@ def admin_reservations():
         day = today.isoformat()
     rows = db().execute("SELECT * FROM reservations WHERE date=? ORDER BY time, table_no", (day,)).fetchall()
     pending = db().execute("SELECT * FROM reservations WHERE status='pending' AND date>=? ORDER BY date, time", (today.isoformat(),)).fetchall()
+    upcoming = db().execute("""SELECT date, COUNT(*) AS n, SUM(guests) AS guests FROM reservations
+        WHERE status IN ('confirmed','arrived') AND date>? AND date<=? GROUP BY date ORDER BY date""",
+                            (today.isoformat(), (today + timedelta(days=7)).isoformat())).fetchall()
     return render_template("admin_reservations.html", tab="reservations", day=day, rows=rows, pending=pending,
-                           seats=int(S()["total_seats"]))
+                           upcoming=upcoming, seats=int(S()["total_seats"]))
 
 
 @app.post("/admin/reservations/new")
@@ -771,10 +779,12 @@ def admin_password():
 @admin_required
 def admin_reservation_status(rid):
     check_csrf()
-    if request.form.get("status") in STATUSES:
+    r = db().execute("SELECT date, time, name FROM reservations WHERE id=?", (rid,)).fetchone()
+    if r and request.form.get("status") in STATUSES:
         db().execute("UPDATE reservations SET status=? WHERE id=?", (request.form["status"], rid))
-        flash("Reservation updated.")
-    return redirect(url_for("admin_reservations", date=request.form.get("date")))
+        flash(f"{r['name']}, {r['date']} at {r['time']}: marked {request.form['status'].replace('_', '-')}.")
+    # show the booking's own day, so a confirmed booking for another day does not seem to disappear
+    return redirect(url_for("admin_reservations", date=r["date"] if r else request.form.get("date")))
 
 
 def save_photo(file):

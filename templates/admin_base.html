@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Admin - {{ s.name }}</title><link rel="stylesheet" href="/static/css/style.css?v={{ v }}"><style>:root{--wood:{{ s.color_dark }};--wood2:color-mix(in srgb,{{ s.color_dark }} 80%,#fff);--accent:{{ s.color_accent }};--gold:{{ s.color_gold }}}</style></head><body class="admin">
+<title>Admin - {{ s.name }}</title><link rel="icon" type="image/svg+xml" href="/static/favicon.svg"><link rel="stylesheet" href="/static/css/style.css?v={{ v }}"><style>:root{--wood:{{ s.color_dark }};--wood2:color-mix(in srgb,{{ s.color_dark }} 80%,#fff);--accent:{{ s.color_accent }};--gold:{{ s.color_gold }}}</style></head><body class="admin">
 <header class="top"><a class="brand" href="/">{{ s.name }}</a><strong>Admin</strong>
 <nav><a href="/admin/reservations" class="{{ 'on' if tab == 'reservations' }}">Reservations{% if pending_count %}<span class="count">{{ pending_count }}</span>{% endif %}</a>
 <a href="/admin/chats" class="{{ 'on' if tab == 'chats' }}">Chats{% if unread %}<span class="count">{{ unread }}</span>{% endif %}</a>

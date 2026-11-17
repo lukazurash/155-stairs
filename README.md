@@ -2,6 +2,8 @@
 
 A full website for **155 Stairs**, a made-up café in Tbilisi, Georgia: a public site for guests and an admin panel for the owner. Built with **Python, Flask and SQLite**, no front-end framework.
 
+**Live demo: https://lukazurashvili.pythonanywhere.com**
+
 > Concept project for my portfolio. The café, address and phone number are not real.
 
 ![Home page](docs/screenshots/home.png)
@@ -117,5 +119,5 @@ The database and photos are files, so use a host with a **persistent disk**, and
 - [x] Private booking confirmation page
 - [x] Clean up unused photo files
 - [ ] Split `app.py` into smaller modules (Flask blueprints)
-- [ ] Live demo
+- [x] Live demo (PythonAnywhere)
 - [ ] Online deposit for bookings (needs a Georgian payment provider such as Bank of Georgia iPay or TBC Checkout)

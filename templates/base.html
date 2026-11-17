@@ -4,7 +4,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 {% if s.font_style == 'modern' %}<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@500;700&family=Noto+Sans+Georgian:wght@400;600;700&display=swap" rel="stylesheet">
 {% else %}<link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Playfair+Display:wght@500;700&family=Noto+Serif+Georgian:wght@400;600;700&display=swap" rel="stylesheet">{% endif %}
-<link rel="stylesheet" href="/static/css/style.css?v={{ v }}">
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg"><link rel="stylesheet" href="/static/css/style.css?v={{ v }}">
 <style>:root{--wood:{{ s.color_dark }};--wood2:color-mix(in srgb,{{ s.color_dark }} 80%,#fff);--accent:{{ s.color_accent }};--gold:{{ s.color_gold }};
 {% if s.font_style == 'modern' %}--head:Poppins,"Noto Sans Georgian",sans-serif;--body:Inter,"Noto Sans Georgian",sans-serif;{% else %}--head:"Playfair Display","Noto Serif Georgian",Georgia,serif;--body:Lora,"Noto Serif Georgian",Georgia,serif;{% endif %}}</style></head>
 <body data-greeting="{{ loc(s, 'chat_greeting') }}" data-chat-title="{{ _('Chat with us') }}" data-chat-ph="{{ _('Type your message') }}" data-chat-send="{{ _('Send') }}">

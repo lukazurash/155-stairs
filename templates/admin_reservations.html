@@ -8,6 +8,7 @@
 {% if r.status in ('pending', 'confirmed', 'arrived') %}<button class="btn small alt" name="status" value="cancelled" data-confirm="Cancel this reservation? The table becomes free again.">Cancel</button>{% endif %}</form></div>{% endmacro %}
 <h1>Reservations</h1>
 {% if pending %}<section class="panel noprint"><h2>Waiting for confirmation ({{ pending|length }})</h2>{% for r in pending %}{{ row(r) }}{% endfor %}</section>{% endif %}
+{% if upcoming %}<section class="panel noprint"><h2>Coming up (next 7 days)</h2><p class="chips">{% for u in upcoming %}<a class="btn small alt" href="/admin/reservations?date={{ u.date }}">{{ u.date }}: {{ u.n }} booking{{ '' if u.n == 1 else 's' }}, {{ u.guests }} guest{{ '' if u.guests == 1 else 's' }}</a>{% endfor %}</p></section>{% endif %}
 <div class="inline noprint"><form method="get" class="inline"><label>Day <input type="date" name="date" value="{{ day }}"></label><button class="btn small">Show</button></form>
 <a class="btn small alt" href="/admin/reservations">Today</a><button type="button" class="btn small alt" data-print>Print this day</button></div>
 {% set active = rows|selectattr('status', 'in', ['pending', 'confirmed', 'arrived'])|list %}

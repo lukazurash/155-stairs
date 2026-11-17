@@ -256,3 +256,10 @@ def test_chat_token_only_shows_own_messages(client):
     assert [m["body"] for m in client.get(f"/api/chat/messages?token={a}").json] == ["hello from A"]
     assert [m["body"] for m in client.get(f"/api/chat/messages?token={b}").json] == ["hello from B"]
     assert client.get("/api/chat/messages?token=guess").json == []
+
+
+def test_tab_icon(client):
+    assert b'rel="icon"' in client.get("/").data
+    resp = client.get("/favicon.ico")
+    assert resp.status_code == 301 and resp.headers["Location"] == "/static/favicon.svg"
+    assert client.get("/static/favicon.svg").status_code == 200
